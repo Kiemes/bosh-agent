@@ -87,7 +87,7 @@ func (net UbuntuNetManager) ComputeNetworkConfig(networks boshsettings.Networks)
 
 func (net UbuntuNetManager) SetupNetworking(networks boshsettings.Networks, errCh chan error) error {
 	if networks.IsPreconfigured() {
-		// Note in this case IPs are not broadcasted
+		// Note in this case IPs are not broadcast
 		return net.writeResolvConf(networks)
 	}
 
