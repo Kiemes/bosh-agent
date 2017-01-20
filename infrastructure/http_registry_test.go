@@ -14,11 +14,14 @@ import (
 	fakeinf "github.com/cloudfoundry/bosh-agent/infrastructure/fakes"
 	fakeplat "github.com/cloudfoundry/bosh-agent/platform/fakes"
 	boshsettings "github.com/cloudfoundry/bosh-agent/settings"
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 )
 
 var _ = Describe("httpRegistry", describeHTTPRegistry)
 
 func describeHTTPRegistry() {
+	logger := boshlog.NewLogger(boshlog.LevelNone)
+
 	var (
 		metadataService *fakeinf.FakeMetadataService
 		registry        Registry
@@ -28,7 +31,7 @@ func describeHTTPRegistry() {
 	BeforeEach(func() {
 		metadataService = &fakeinf.FakeMetadataService{}
 		platform = &fakeplat.FakePlatform{}
-		registry = NewHTTPRegistry(metadataService, platform, false)
+		registry = NewHTTPRegistry(metadataService, platform, false, logger)
 	})
 
 	Describe("GetSettings", func() {
@@ -59,7 +62,7 @@ func describeHTTPRegistry() {
 				settingsJSON = `{"settings": "{\"agent_id\":\"my-agent-id\"}"}`
 				metadataService.InstanceID = "fake-identifier"
 				metadataService.RegistryEndpoint = ts.URL
-				registry = NewHTTPRegistry(metadataService, platform, false)
+				registry = NewHTTPRegistry(metadataService, platform, false, logger)
 			})
 
 			Context("when the metadata has Networks information", func() {
@@ -120,7 +123,7 @@ func describeHTTPRegistry() {
 
 		Context("when registry is configured to not use server name as id", func() {
 			BeforeEach(func() {
-				registry = NewHTTPRegistry(metadataService, platform, false)
+				registry = NewHTTPRegistry(metadataService, platform, false, logger)
 				metadataService.InstanceID = "fake-identifier"
 				metadataService.RegistryEndpoint = ts.URL
 			})
@@ -284,7 +287,7 @@ func describeHTTPRegistry() {
 
 		Context("when registry is configured to use server name as id", func() {
 			BeforeEach(func() {
-				registry = NewHTTPRegistry(metadataService, platform, true)
+				registry = NewHTTPRegistry(metadataService, platform, true, logger)
 				metadataService.ServerName = "fake-identifier"
 				metadataService.RegistryEndpoint = ts.URL
 			})

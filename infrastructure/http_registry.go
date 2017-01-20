@@ -4,28 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
+	"time"
 
 	boshplat "github.com/cloudfoundry/bosh-agent/platform"
 	boshsettings "github.com/cloudfoundry/bosh-agent/settings"
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
+	boshhttp "github.com/cloudfoundry/bosh-utils/http"
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 )
 
 type httpRegistry struct {
 	metadataService   MetadataService
 	platform          boshplat.Platform
 	useServerNameAsID bool
+	logger		  boshlog.Logger
 }
 
 func NewHTTPRegistry(
 	metadataService MetadataService,
 	platform boshplat.Platform,
 	useServerNameAsID bool,
+	logger boshlog.Logger,
 ) Registry {
 	return httpRegistry{
 		metadataService:   metadataService,
 		platform:          platform,
 		useServerNameAsID: useServerNameAsID,
+		logger:		   logger,
 	}
 }
 
@@ -69,7 +74,7 @@ func (r httpRegistry) GetSettings() (boshsettings.Settings, error) {
 	}
 
 	settingsURL := fmt.Sprintf("%s/instances/%s/settings", registryEndpoint, identifier)
-	wrapperResponse, err := http.Get(settingsURL)
+	wrapperResponse, err := boshhttp.NewDefaultRetryClient(10, 1 * time.Second, r.logger).Get(settingsURL)
 	if err != nil {
 		return settings, bosherr.WrapError(err, "Getting settings from url")
 	}
